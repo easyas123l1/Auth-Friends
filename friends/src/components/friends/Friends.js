@@ -33,17 +33,26 @@ class Friends extends Component {
     .then(res => {
       console.log(res)
       this.setState({ friends: res.data })
+      console.log(this.state.friends);
     })
   }
 
-  getById = id => {
+  getById = e => {
+    e.preventDefault();
+    let id = this.state.id;
     axiosWithAuth()(`http://localhost:5000/api/friends/${id}`, {
       headers: { authorization: localStorage.getItem('token') }
     })
     .then(res => {
       console.log(res);
       this.setState({ friends: res.data })
+      console.log(this.state.friends);
     })
+  }
+
+  getAllData = e => {
+    e.preventDefault();
+    this.getData();
   }
 
   handleChange = e => {
@@ -62,12 +71,18 @@ class Friends extends Component {
           value= {this.state.id}
           onChange = {this.handleChange}
           />
+          <button>Search</button>
         </form>
+        <button onClick={this.getAllData}>Get all</button>
         <div>
           <h1>INSIDE FRIENDS :D</h1>  
-          {this.state.friends.map(friend => (
+          {this.state.friends[0] ?
+          this.state.friends.map(friend => (
             <Friend key={friend.id} friend={friend}/>        
-          ))}
+          ))
+        :
+        <Friend friend={this.state.friends} />
+        }
         </div>
       </>
     );
