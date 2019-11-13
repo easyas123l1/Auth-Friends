@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 
 import Friend from './Friend';
+import FriendForm from './FriendForm';
 
 const axiosWithAuth = () => {
   return axios.create({
@@ -14,7 +15,10 @@ const axiosWithAuth = () => {
 class Friends extends Component {
   state = {
     friends: [],
-    id: ''
+    id: '',
+    name: '',
+    age: '',
+    email: ''
   }
 
   componentDidMount() {
@@ -27,6 +31,7 @@ class Friends extends Component {
   }
 
   getData = () => {
+    console.log(axiosWithAuth)
     axiosWithAuth()('http://localhost:5000/api/friends', {
       headers: { authorization: localStorage.getItem('token') }
     })
@@ -46,7 +51,6 @@ class Friends extends Component {
     .then(res => {
       console.log(res);
       this.setState({ friends: res.data })
-      console.log(this.state.friends);
     })
   }
 
@@ -61,6 +65,24 @@ class Friends extends Component {
     })
   }
 
+  updateFriends = array => {
+    this.setState({ friends: array })
+  }
+
+  saveChanges = e => {
+    e.preventDefault();
+    axiosWithAuth().post(`http://localhost:5000/api/friends/`, {
+      id: this.state.id, 
+      name: this.state.name, 
+      age: this.state.age, 
+      email: this.state.email 
+ })
+   .then(res => {
+     console.log(res);
+     this.updateFriends(res.data)
+   })
+  }
+
   render() {
     return (
       <>
@@ -71,17 +93,40 @@ class Friends extends Component {
           value= {this.state.id}
           onChange = {this.handleChange}
           />
-          <button>Search</button>
+          <button>Search by ID</button>
         </form>
-        <button onClick={this.getAllData}>Get all</button>
+        <form onSubmit={this.saveChanges}>
+          <input
+            type="text"
+            name="name"
+            value={this.state.name}
+            onChange={this.handleChange}
+          />
+          <input
+            type="text"
+            name="age"
+            value={this.state.age}
+            onChange={this.handleChange}
+          />
+          <input
+            type="email"
+            name="email"
+            value={this.state.email}
+            onChange={this.handleChange}
+          />
+          <button>Add Friend</button>
+        </form>
+        <button onClick={this.getAllData}>Get all Friends</button>
         <div>
-          <h1>INSIDE FRIENDS :D</h1>  
           {this.state.friends[0] ?
           this.state.friends.map(friend => (
-            <Friend key={friend.id} friend={friend}/>        
+            <Friend key={friend.id} friend={friend} updateFriends={this.updateFriends} />        
           ))
         :
-        <Friend friend={this.state.friends} />
+        <>
+          <Friend friend={this.state.friends} updateFriends={this.updateFriends} />
+          <FriendForm id={this.state.friends.id} updateFriends={this.updateFriends}/>
+        </>
         }
         </div>
       </>
